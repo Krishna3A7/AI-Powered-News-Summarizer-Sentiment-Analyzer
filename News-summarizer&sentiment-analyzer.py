@@ -31,3 +31,33 @@ summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 def summarize_text(text):
     return summarizer(text, max_length=100, min_length=30, do_sample=False)[0]["summary_text"]
+
+# Sentiment Analysis
+nltk.download("vader_lexicon")
+sia = SentimentIntensityAnalyzer()
+
+def analyze_sentiment(text):
+    score = sia.polarity_scores(text)["compound"]
+    if score >= 0.05:
+        return "Positive 😊"
+    elif score <= -0.05:
+        return "Negative 😞"
+    else:
+        return "Neutral 😐"
+
+# Streamlit UI
+st.title("📰 AI-Powered News Summarizer & Sentiment Analyzer")
+
+keyword = st.text_input("Enter a keyword for news search:", "AI")
+
+if st.button("Fetch News"):
+    articles = get_news_articles(keyword)
+    
+    for article in articles:
+        st.subheader(article["title"])
+        st.write(f"[Read More]({article['link']})")
+        summary = summarize_text(article["title"]) # Summarize news article
+        st.write("**Summary:**", summary)
+        sentiment = analyze_sentiment(summary) # Sentiment Analysis
+        st.write("**Sentiment:**", sentiment)
+        st.write("---")
